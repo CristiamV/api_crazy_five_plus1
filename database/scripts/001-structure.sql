@@ -92,6 +92,13 @@ INSERT INTO public.skills (id_cat, name) VALUES (4, 'technical communication');
 INSERT INTO public.skills (id_cat, name) VALUES (4, 'data communication');
 INSERT INTO public.skills (id_cat, name) VALUES (4, 'software architecture');
 
+INSERT INTO public.skills (id_cat, name) VALUES (5, 'design thinking');
+INSERT INTO public.skills (id_cat, name) VALUES (5, 'workshop facilitation');
+INSERT INTO public.skills (id_cat, name) VALUES (5, 'techinical writing');
+INSERT INTO public.skills (id_cat, name) VALUES (5, 'public speaking');
+INSERT INTO public.skills (id_cat, name) VALUES (5, 'cross-discipline collaboration');
+INSERT INTO public.skills (id_cat, name) VALUES (5, 'recruiting');
+INSERT INTO public.skills (id_cat, name) VALUES (5, 'mentoring');
 
 CREATE TABLE user_level (
     id_user INTEGER,
