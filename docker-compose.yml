@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  augere_db:
+    image: augere:pg
+    build:
+      context: .
+      dockerfile: Dockerfile-pg
+    volumes:
+      - app-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: "u_augere"
+      POSTGRES_DB: augere
+      POSTGRES_PASSWORD: "u_augere01*.,"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U augere -d augere_db"]
+      interval: 1m
+      timeout: 5s
+      retries: 5
+  augere_api:
+    image: node:lts-alpine
+    depends_on:
+      augere_db:
+        condition: service_healthy
+    command: npm start
+    working_dir: /usr/src/app
+    volumes:
+      - ./api:/usr/src/app
+    ports:
+      - 9021:9021
+    environment:
+      LOG_LEVEL: debug
+      PGHOST: augere_db
+      PGUSER: u_augere
+      PGPASSWORD: u_augere01*.,
+      PGPORT: 5432
+volumes:
+  app-data:
