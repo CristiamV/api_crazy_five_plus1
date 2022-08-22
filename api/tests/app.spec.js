@@ -1,9 +1,28 @@
 const request = require('supertest');
 const app = require('../app');
 
-jest.mock('../db/', () => ({
-  query: () => jest.fn(),
+const mockGetUser = { id_user: 1, user_name: 'test', exists: false };
+const mockGetCategories = {
+  "categories": {
+    "design": {
+      "id": 1,
+      "skills": {
+        "visual": {
+          "id": 1,
+          "level": 1
+        },
+      }
+    }
+  },
+};
+
+jest.mock("../services/UserService", () => ({
+  get: () => mockGetUser,
+  getLevel: () => mockGetCategories,
+  setLevels: () => { console.log(); },
 }));
+
+jest.mock("../services/CategoriesService", () => ({ get: () => mockGetCategories }));
 
 describe('Testing API routes', () => {
   it('Testing root endpoint', async () => {
@@ -11,25 +30,33 @@ describe('Testing API routes', () => {
     expect(response.statusCode).toBe(200);
   });
 
-  describe("queues", () => {
-    it("It should return the queues", async () => {
-      const response = await request(app).get('/queues');
+  describe("users", () => {
+    it("It should return the user and no level if not exists", async () => {
+      const response = await request(app).get('/users/test');
+      const result = JSON.parse(response.text);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveProperty('queues');
-      expect(response.body.queues).toHaveProperty('queueA');
-      expect(response.body.queues).toHaveProperty('queueB');
+      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty('categories');
     });
 
-    it("It should add customer to queue", async () => {
-      const response = await request(app).post('/queues/customer').send({ id: 1, name: 'Test'});
+    it("It should return the user and no level if exists", async () => {
+      mockGetUser.exists = true;
+
+      const response = await request(app).get('/users/test');
+      const result = JSON.parse(response.text);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveProperty('customer');
-      expect(response.body.customer).toHaveProperty('id');
-      expect(response.body.customer).toHaveProperty('name');
-      expect(response.body.customer).toHaveProperty('queue');
-      expect(response.body.customer).toHaveProperty('expire_at');
+      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty('categories');
+    });
+
+    it("It should set the levels of the user", async () => {
+      mockGetUser.exists = true;
+
+      const response = await request(app).post('/users/levels');
+
+      expect(response.statusCode).toBe(200);
     });
   });
 });

@@ -15,8 +15,15 @@ router.get('/:userName', async (req, res) => {
     await users.getLevel(user.id_user, categories);
   }
 
-
   res.status(200).json({ user, categories });
 })
+
+router.post('/levels', async(req, res) => {
+  const { body } = req;
+
+  await users.setLevels(body);
+
+  res.status(200).send('Levels setted!');
+});
 
 module.exports = router;

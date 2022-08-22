@@ -1,21 +1,15 @@
 
 const { query } = require('../db');
 const logger = require('../utils/logger');
+const queries = require('../utils/queries');
 
 class UserService {
 
-  QUERY_SCORES = `
-    SELECT c.name AS category_name, s.name AS skill_name, ul.level
-    FROM  user_level ul
-    INNER JOIN public.skills s USING(id_skill)
-    INNER JOIN public.categories c USING (id_cat)
-    WHERE id_user = $1
-  `;
-
   /**
+   * Gets or creates the user
    *
-   * @param {*} userName
-   * @returns
+   * @param {string} userName
+   * @returns {User} the corresponding user.
    */
   async get(userName) {
     logger.debug(`Start get@UserService for: ${userName}`);
@@ -37,12 +31,17 @@ class UserService {
     return { ...user, exists};
   }
 
+  /**
+   * Gets the level of the user.
+   *
+   * @param {number} idUser
+   * @param {object} categories
+   * @returns {Categories}.
+   */
   async getLevel(idUser, categories) {
     logger.debug(`Start getLevel@UserService: ${idUser}`);
 
-    const { rows } = await query(this.QUERY_SCORES, [idUser]);
-
-    console.log(rows);
+    const { rows } = await query(queries.LEVELS, [idUser]);
 
     rows.forEach((row) => {
       const { category_name, skill_name, level } = row;
@@ -52,25 +51,40 @@ class UserService {
 
     logger.debug(`Finish getLevel@UserService: ${idUser}`);
 
-    console.log(JSON.stringify(categories));
     return categories;
   }
 
+  /**
+   * Creates an user with username
+   *
+   * @param {string} userName
+   * @returns {User} the created user.
+   */
   async create(userName) {
     logger.debug(`Start create@UserService for: ${userName}`);
 
     const { rows } = await query('INSERT INTO public.users (user_name) VALUES($1) RETURNING *', [userName]);
-    console.log(rows);
 
     logger.debug(`Finish create@UserService for: ${userName}`);
 
     return rows[0];
   }
 
-  async setLevels(idUser, levels) {
-    logger.debug(`Start setLevels@UserService for ${idUser}`);
+  /**
+   * Sets the levels of the user
+   *
+   * @param {object} request
+   */
+  async setLevels(request) {
+    logger.debug(`Start setLevels@UserService for ${request.idUser}`);
 
-    []
+    const { idUser, levels } = request;
+
+    for ( const score of levels) {
+      const [idSkill, level] = score;
+
+      await query('INSERT INTO user_level VALUES ($1, $2, $3)', [idUser, idSkill, level]);
+    }
 
     logger.debug(`Finish setLevels@UserService for ${idUser}`);
   }
